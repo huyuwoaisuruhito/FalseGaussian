@@ -1,0 +1,302 @@
+{
+    "molssi_bse_schema": {
+        "schema_type": "complete",
+        "schema_version": "0.1"
+    },
+    "revision_description": "Data from Gaussian 09",
+    "revision_date": "2019-02-21",
+    "elements": {
+        "1": {
+            "electron_shells": [
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.5447178000E+01",
+                        "0.8245472400E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.1562849787E+00",
+                            "0.9046908767E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.1831915800E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "1.0000000"
+                        ]
+                    ]
+                }
+            ],
+            "references": [
+                {
+                    "reference_description": "21G Split-valence basis set for H,He",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                }
+            ]
+        },
+        "6": {
+            "electron_shells": [
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.1722560000E+03",
+                        "0.2591090000E+02",
+                        "0.5533350000E+01"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.6176690738E-01",
+                            "0.3587940429E+00",
+                            "0.7007130837E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.3664980000E+01",
+                        "0.7705450000E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "-0.3958951621E+00",
+                            "0.1215834356E+01"
+                        ],
+                        [
+                            "0.2364599466E+00",
+                            "0.8606188057E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.1958570000E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.1000000000E+01"
+                        ],
+                        [
+                            "0.1000000000E+01"
+                        ]
+                    ]
+                }
+            ],
+            "references": [
+                {
+                    "reference_description": "3-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                },
+                {
+                    "reference_description": "6-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                }
+            ]
+        },
+        "7": {
+            "electron_shells": [
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.2427660000E+03",
+                        "0.3648510000E+02",
+                        "0.7814490000E+01"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.5986570051E-01",
+                            "0.3529550030E+00",
+                            "0.7065130060E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.5425220000E+01",
+                        "0.1149150000E+01"
+                    ],
+                    "coefficients": [
+                        [
+                            "-0.4133000774E+00",
+                            "0.1224417267E+01"
+                        ],
+                        [
+                            "0.2379720162E+00",
+                            "0.8589530586E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.2832050000E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.1000000000E+01"
+                        ],
+                        [
+                            "0.1000000000E+01"
+                        ]
+                    ]
+                }
+            ],
+            "references": [
+                {
+                    "reference_description": "3-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                },
+                {
+                    "reference_description": "6-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                }
+            ]
+        },
+        "8": {
+            "electron_shells": [
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.3220370000E+03",
+                        "0.4843080000E+02",
+                        "0.1042060000E+02"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.5923939339E-01",
+                            "0.3514999608E+00",
+                            "0.7076579210E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.7402940000E+01",
+                        "0.1576200000E+01"
+                    ],
+                    "coefficients": [
+                        [
+                            "-0.4044535832E+00",
+                            "0.1221561761E+01"
+                        ],
+                        [
+                            "0.2445861070E+00",
+                            "0.8539553735E+00"
+                        ]
+                    ]
+                },
+                {
+                    "function_type": "gto",
+                    "region": "valence",
+                    "angular_momentum": [
+                        0,
+                        1
+                    ],
+                    "exponents": [
+                        "0.3736840000E+00"
+                    ],
+                    "coefficients": [
+                        [
+                            "0.1000000000E+01"
+                        ],
+                        [
+                            "0.1000000000E+01"
+                        ]
+                    ]
+                }
+            ],
+            "references": [
+                {
+                    "reference_description": "3-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                },
+                {
+                    "reference_description": "6-21G Split-valence basis set",
+                    "reference_keys": [
+                        "binkley1980a"
+                    ]
+                }
+            ]
+        }
+    },
+    "version": "1",
+    "function_types": [
+        "gto",
+        "gto_cartesian"
+    ],
+    "names": [
+        "3-21G"
+    ],
+    "tags": [],
+    "family": "pople",
+    "description": "3-21G Split-valence basis set",
+    "role": "orbital",
+    "auxiliaries": {},
+    "name": "3-21G"
+}
