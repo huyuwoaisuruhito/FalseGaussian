@@ -47,7 +47,7 @@ class Main_windows(tk.Tk):
         self.Computer = None
         self.Molecule = mol.Molecule()
         self.fio = fio.File_IO(self, self.Molecule)
-        self.fio.input_gaussian_file('./GaussianInp/Arg.gjf')#testing
+        self.fio.input_gaussian_file('./GaussianInp/HCN.gjf')#testing
         self.Molecule.auto_set_O()
     
     def open_bond_length_windows(self):

@@ -1,3 +1,5 @@
+import Misc.periodicTable as pt
+
 class File_IO():
 
     '''文件IO'''
@@ -25,7 +27,7 @@ class File_IO():
         self.__M.set_multiplicity(inp_f[2][0][0])
         atoms = self.__M.modify_atoms()
         for l in inp_f[2][1:]:
-            atoms.append(l[0:1] + [float(ll) for ll in l[1:]])
+            atoms.append([pt.get_atomic_number(l[0:1][0])] + [float(ll) for ll in l[1:]])
 
         bonds = self.__M.modify_bonds()
         [bonds.append(dict()) for i in range(len(atoms))]
@@ -40,8 +42,8 @@ class File_IO():
         out.writelines('\n\n0 1\n')
 
         for a in self.__M.modify_atoms():
-            out.write(' {:<15s}'.format(a[0]) + ' ' + ' '.join(['{:>13s}'.format('{:+.8f}'.format(s)) for s in a[1:]]) + '\n')
-        
+            out.write(' {:<15s}'.format(pt.get_name(a[0])) + ' ' + ' '.join(['{:>13s}'.format('{:+.8f}'.format(s)) for s in a[1:]]) + '\n')
+
         out.writelines('\n')
 
         for i, b in enumerate(self.__M.modify_bonds()):

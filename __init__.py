@@ -1,4 +1,6 @@
 import Display.gui as gui
+import HartreeFork.basis
 
 if __name__ == "__main__":
-    gui.Main_windows()
+    pass
+    # gui.Main_windows()

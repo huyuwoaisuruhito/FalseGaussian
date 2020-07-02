@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import Misc.periodicTable as pt
 
 F_RADII = {
     'H': 0.1, 'B': 0.15, 'C': 0.2, 'N': 0.2, 'O': 0.2, 'F': 0.2, 'Si': 0.3, 'P': 0.3, 'S': 0.3, 'Cl': 0.3,
@@ -9,7 +10,8 @@ F_RADII = {
 F_COLOR = {
     'H': 'whitesmoke', 'B': 'darkgray', 'C': 'dimgray', 'N': 'blue', 'O': 'red', 'F': 'greenyellow', 'Si': 'whitesmoke', 'P': 'magenta', 'S': 'gold', 'Cl': 'limegreen',
 }
-
+F_RADII = {pt.get_atomic_number(k):v for k,v in F_RADII.items()}
+F_COLOR = {pt.get_atomic_number(k):v for k,v in F_COLOR.items()}
 
 class DDD_plot():
 

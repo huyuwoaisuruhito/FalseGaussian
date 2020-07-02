@@ -1,12 +1,6 @@
 import copy
 import numpy as np
 
-PT = {
-    'H': 1, 'He': 2, 'Li': 3, 'Be': 4, 'B': 5, 'C': 6, 'N': 7, 'O': 8, 
-    'F': 9, 'Ne': 10, 'Na': 11, 'Mg': 12, 'Al':13, 'Si': 14, 'P':15, 'S': 16, 
-    'Cl': 17, 'Ar': 18, 'K': 19, 'Ca': 20, 'Sc': 21, 'Ti': 22, 'V': 23, 'Cr': 24, 
-}
-
 class Molecule():
 
     '''分子结构与控制'''
@@ -255,11 +249,11 @@ class Molecule():
     def auto_set_O(self):
         delta = [0, 0, 0]
         sums = 0
-        for s, x, y, z in self.__atoms:
-            sums += PT[s]
-            delta[0] += x * PT[s]
-            delta[1] += y * PT[s]
-            delta[2] += z * PT[s]
+        for n, x, y, z in self.__atoms:
+            sums += n
+            delta[0] += x * n
+            delta[1] += y * n
+            delta[2] += z * n
         if sums != 0:
             self.set_O(*[-d/sums for d in delta])
         else:
