@@ -64,7 +64,7 @@ def RHF(N, atoms, bname, fname):
                 E += 1/2 * P[j,i] * (Hc[i,j] + F[i,j])
         
         t, dt = timer(), timer() - t
-        print('E (iteration {:2d}) = {:12.6f} \t in {} s'.format(count,E, dt))
+        print('E (iteration {:2d}) = {:12.6f} \t in {:.4f} s'.format(count,E, dt))
         if (abs(E-E_old) < 1e-5) and (iteration>0):
             print('\nEt = Eel + Vnn')
             print('   = {:.6f} + {:.6f}'.format(E, Vnn))
@@ -90,7 +90,7 @@ def make_molecular_integrals(K, basis, atoms, bname, fname):
         mi.buildS(basis, S)
         dump_matrix(name, 'S', S)
     t, dt = timer(), timer() - t
-    print('Prepare overlap matrix in:{} s'.format(dt))
+    print('Prepare overlap matrix in:{:.4f} s'.format(dt))
 
     if os.path.exists(name+'.T.npy') and not debug:
         T = np.load(name+'.T.npy')
@@ -99,7 +99,7 @@ def make_molecular_integrals(K, basis, atoms, bname, fname):
         mi.buildT(basis, T)
         dump_matrix(name, 'T', T)
     t, dt = timer(), timer() - t
-    print('Prepare kinetic matrix in:{} s'.format(dt))
+    print('Prepare kinetic matrix in:{:.4f} s'.format(dt))
 
     if os.path.exists(name+'.V.npy') and not debug:
         V = np.load(name+'.V.npy')
@@ -108,7 +108,7 @@ def make_molecular_integrals(K, basis, atoms, bname, fname):
         mi.buildV(basis, atoms, V)
         dump_matrix(name, 'V', V)
     t, dt = timer(), timer() - t
-    print('Prepare nuclear attraction matrix in:{} s'.format(dt))
+    print('Prepare nuclear attraction matrix in:{:.4f} s'.format(dt))
 
     if os.path.exists(name+'.G.npy') and not debug:
         G = np.load(name+'.G.npy')
@@ -117,7 +117,7 @@ def make_molecular_integrals(K, basis, atoms, bname, fname):
         mi.buildG(basis, G)
         dump_matrix(name, 'G', G)
     t, dt = timer(), timer() - t
-    print('Prepare two-electron integral matrix in:{} s'.format(dt))
+    print('Prepare two-electron integral matrix in:{:.4f} s'.format(dt))
 
     Hc = T + V
     return (S, Hc, G)
