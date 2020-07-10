@@ -1,5 +1,5 @@
 import Display.gui as gui
-import HartreeFork.basis
+import HartreeFork.RHF
 
 if __name__ == "__main__":
     pass

@@ -1,6 +1,8 @@
 import copy
 import numpy as np
 
+import Misc.periodicTable as pt
+
 class Molecule():
 
     '''分子结构与控制'''
@@ -28,8 +30,11 @@ class Molecule():
     def get_multiplicity(self, m):
         return self.__multiplicity
 
-    def get_atoms(self):
+    def get_atoms_number(self):
         return copy.deepcopy(self.__atoms)
+    
+    def get_atoms_name(self):
+        return [[pt.get_name(l[0])] + l[1:] for l in self.get_atoms_number()]
 
     def get_bonds(self):
         return copy.deepcopy(self.__bonds)

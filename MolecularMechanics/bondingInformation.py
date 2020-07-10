@@ -4,7 +4,7 @@
 
 class Bondingmaps:
     def __init__(self, molecule):            #"待改为molecules"
-        self.sites = molecule.get_atoms()
+        self.sites = molecule.get_atoms_name()
         self.bondings = []
         self.relations = []
         self.bondinglist = []

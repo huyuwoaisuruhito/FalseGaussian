@@ -5,9 +5,11 @@
 力场：amber03
 """
 
-import time, sys, copy
+import sys, copy
 import numpy as np
-from MolecularMechanics.bonding_information import Bondingmaps
+from timeit import default_timer as timer
+
+from MolecularMechanics.bondingInformation import Bondingmaps
 from MolecularMechanics.atomtype import Atoms
 import MolecularMechanics.c_computing as ccp
 
@@ -61,7 +63,7 @@ class Computing:
         self._parent.event_generate("<<UpadateLog>>")
         self._parent.event_generate("<<Upadate3DView>>")
         self._suspend = False
-        t = time.time()
+        
         
         while True:
             if self._suspend:
@@ -75,7 +77,6 @@ class Computing:
                 break
             
             if self._times % 10 == 1:
-                t, dt = time.time(), time.time() - t
                 atomsites = self._molecule.modify_atoms()
                 for i, site in enumerate(self.sites):
                     atomsites[i][1:] = list(site)
@@ -85,8 +86,14 @@ class Computing:
                 
                 self.__printstep()
                 self._oldpotential = self._potential
+                t = timer()
                 self._parent.event_generate("<<UpadateLog>>")
+                t, dt = timer(), timer() - t
+                print('FreshLog:', dt)
                 self._parent.event_generate("<<Upadate3DView>>")
+                t, dt = timer(), timer() - t
+                print('FreshGraph:', dt)
+                print()
                 
         
         self.sites = self._privsites
@@ -115,7 +122,7 @@ class Computing:
     def __calc(self):
         """计算的基本步骤"""
         #计算新坐标对应的势能
-        t = time.time()
+        t = timer()
         def potential_bond(array1, array2, bonddata):
             arrayr = array1 - array2
             return bonddata[2] * (np.sqrt(arrayr.dot(arrayr)) - bonddata[1])**2 / 2
@@ -194,7 +201,7 @@ class Computing:
                         if self._countstop > 6:
                             dihedral = self._dihedrals[np.random.randint(1, len(self._dihedrals))]
                             self._molecule.modify_dihedral_angle_A(*dihedral, delta=np.random.random() * 0.10 + 0.05)
-                            self._newsites = np.array([list(map(lambda lenth: lenth, i[1:])) for i in self._molecule.get_atoms()])
+                            self._newsites = np.array([list(map(lambda lenth: lenth, i[1:])) for i in self._molecule.get_atoms_number()])
                             self._newstart = True
                     
                         self._countmin = 0
@@ -203,7 +210,7 @@ class Computing:
                         return
         
         #在正常情况下计算力（势能偏导）以得到一组新坐标
-        t, dt = time.time(), time.time() - t
+        t, dt = timer(), timer() - t
         print('Form:%f'%dt)
         def fbond(num1, array1, array2, bonddata):
             arrayr = array2 - array1
@@ -299,26 +306,26 @@ class Computing:
         
         else: #正常情况下对所以梯度加和以得到总能量的梯度
             ccp.init(np.log2(sys.maxsize))
-            t, dt = time.time(), time.time() - t
+            t, dt = timer(), timer() - t
             print('F_Z:%f'%dt)
             for bond in self._bonds:
                 act_fbond(bond)
-            t, dt = time.time(), time.time() - t
+            t, dt = timer(), timer() - t
             print('d_BL:%f'%dt)
         
             for angle in self._angles:
                 act_fangle(angle)
-            t, dt = time.time(), time.time() - t
+            t, dt = timer(), timer() - t
             print('d_BA:%f'%dt)
 
             for dh in self._dihedrals:
                 c_act_fdihedral(dh)
-            t, dt = time.time(), time.time() - t
+            t, dt = timer(), timer() - t
             print('d_DH:%f'%dt)
         
             for nonbond in self._nonbonds:
                 act_fnonbond(nonbond)
-            t, dt = time.time(), time.time() - t
+            t, dt = timer(), timer() - t
             print('d_NB:%f'%dt)
             print()
 

@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import tkinter as tk
 from tkinter import ttk
@@ -29,7 +30,7 @@ class Main_windows(tk.Tk):
 
         super().__init__()
         self.wm_title('测试')
-        self.geometry('1200x820')
+        self.geometry('1200x800')
         self.protocol('WM_DELETE_WINDOW', self.__quit)
         
         self.__menu = _Main_menu(self)
@@ -47,7 +48,7 @@ class Main_windows(tk.Tk):
         self.Computer = None
         self.Molecule = mol.Molecule()
         self.fio = fio.File_IO(self, self.Molecule)
-        self.fio.input_gaussian_file('./GaussianInp/HCN.gjf')#testing
+        self.fio.input_gaussian_file('./GaussianInp/Arg.gjf')#testing
         self.Molecule.auto_set_O()
     
     def open_bond_length_windows(self):
@@ -194,8 +195,8 @@ class _DDD_windows(tk.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
-        #self.wm_title('3D视图')
-        #self.geometry('800x600')
+        # self.wm_title('3D视图')
+        # self.geometry('800x600')
         self._parent = parent
 
         self.plot = dp.DDD_plot()
@@ -266,7 +267,7 @@ class Log(tk.Frame):
 
         self.__label = tk.Label(self, text='Log')
         self.__text = tk.scrolledtext.ScrolledText(self, width=40, height=60, state = tk.DISABLED)
-        self.__label.grid(row=0, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
+        self.__label.grid(row=0, column=0)
         self.__text.grid(row=1, column=0, sticky=tk.N+tk.S+tk.E+tk.W)
         self._parent = parent
         
@@ -278,4 +279,3 @@ class Log(tk.Frame):
         self.__text.see(tk.END)
         self.__text['state'] = tk.DISABLED
         self.update()
-
