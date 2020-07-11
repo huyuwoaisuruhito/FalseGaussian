@@ -1,0 +1,29 @@
+{
+    "molssi_bse_schema": {
+        "schema_type": "complete",
+        "schema_version": "0.1"
+    },
+    "revision_description": "Data from Gaussian09",
+    "revision_date": "2018-06-19",
+    "elements": {
+        "1": {
+            "electron_shells": [
+                {
+                    "function_type": "gto",
+                    "region": "",
+                    "angular_momentum": [
+                        0
+                    ],
+                    "exponents": [
+                        "0.48"
+                    ],
+                    "coefficients": [
+                        [
+                            "1"
+                        ]
+                    ]
+                }
+            ]
+        }
+    }
+}

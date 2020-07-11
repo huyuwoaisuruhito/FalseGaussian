@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from scipy import misc, special
+from scipy import special
 
 root = 'HartreeFock/Basis/'
 
