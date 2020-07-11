@@ -3,17 +3,10 @@ from ctypes import *
 
 lib = None
 fortran = 1
-path = 'MolecularMechanics/'
 
 def init(bit):
     global lib
-    if bit == 32:
-        lib = WinDLL(path + 'mm_c.dll')
-    else:
-        if fortran:
-            lib = CDLL(path + 'mm_f_64.dll')
-        else:
-            lib = WinDLL(path + 'mm_c_64.dll')
+    lib = CDLL('lib/.build/molecularMechanics.lib')
 
 def fdihedral_c(num2, array1, array2, array3, array4, dihedraldata):
     ans = np.asarray((0, 0, 0), dtype = 'double')

@@ -1,5 +1,12 @@
+import ctypes
+from timeit import default_timer as timer
+
 import numpy as np
 from scipy import special
+
+Lib_boysGaussJacobi = ctypes.CDLL('lib/.build/boysGaussJacobi.lib')
+Lib_boysGaussJacobi.boysGaussJacobi.argtype = (ctypes.c_int, ctypes.c_double)
+Lib_boysGaussJacobi.boysGaussJacobi.restype = ctypes.c_double
 
 def dot_product(R1, R2):
     return sum([(R1[i]-R2[i])**2 for i in range(3)])
@@ -60,13 +67,15 @@ def buildV(basis, atoms, V):
 def buildG(basis, G):
     N = 0
     K = len(basis)
+    t = timer()
     for i in range(K):
         for j in range(K):
             for k in range(K):
                 for l in range(K):
                     N += 1
                     if N % 1000 == 1:
-                        print('Computed '+ str(N-1) + ' of ' + str(K) + '^4=' + str(K**4) + ' double electron integrals.')
+                        t, dt = timer(), timer() - t
+                        print('Computed '+ str(N-1) + ' of ' + str(K) + '^4=' + str(K**4) + ' two-electron integrals in {:.4f} s.'.format(dt))
                     if G[i][j][k][l] != 0:
                         continue
                     Bi, Bj, Bk, Bl = basis[i], basis[j], basis[k], basis[l]
@@ -76,8 +85,6 @@ def buildG(basis, G):
                                 for bl in Bl.cgf:
                                     Eri = electron_repulsion_integral(bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
                                     G[i][j][k][l] += bi.k * bj.k * bk.k * bl.k * Eri
-                                    # if (i,j,k,l) == (0,0,3,3):
-                                    #     print(Eri)
                     G[j][i][k][l] = G[i][j][k][l]
                     G[i][j][l][k] = G[i][j][k][l]
                     G[j][i][l][k] = G[i][j][k][l]
@@ -86,6 +93,55 @@ def buildG(basis, G):
                     G[k][l][j][i] = G[i][j][k][l] #要求空间轨道为实函数
                     G[l][k][j][i] = G[i][j][k][l] #要求空间轨道为实函数
     return G
+
+def buildG_P(basis, G):
+    N = 0
+    t = timer()
+    def callback(res):
+        nonlocal G, N, t
+        if res:
+            i, j, k, l = res[0]
+            G[i][j][k][l] = res[1]
+            G[j][i][k][l] = G[i][j][k][l]
+            G[i][j][l][k] = G[i][j][k][l]
+            G[j][i][l][k] = G[i][j][k][l]
+            G[k][l][i][j] = G[i][j][k][l] #要求空间轨道为实函数
+            G[l][k][i][j] = G[i][j][k][l] #要求空间轨道为实函数
+            G[k][l][j][i] = G[i][j][k][l] #要求空间轨道为实函数
+            G[l][k][j][i] = G[i][j][k][l] #要求空间轨道为实函数
+
+        N += 1
+        if N % 1000 == 1:
+            t, dt = timer(), timer() - t
+            print('Computed '+ str(N-1) + ' of ' + str(K) + '^4='
+                 + str(K**4) + ' two-electron integrals in {:.4f} s.'.format(dt))
+
+    n = 8
+    K = len(basis)
+    import multiprocessing
+    p = multiprocessing.Pool(n)
+    for i in range(K):
+        for j in range(K):
+            for k in range(K):
+                for l in range(K):
+                    p.apply_async(__buildG_p, args=(i, j, k, l, basis, G), callback=callback)
+    p.close()
+    p.join()
+    return G
+
+def __buildG_p(i, j, k, l, basis, G):
+    if G[i][j][k][l] != 0:
+        return None
+    Bi, Bj, Bk, Bl = basis[i], basis[j], basis[k], basis[l]
+    g = 0
+    for bi in Bi.cgf:
+        for bj in Bj.cgf:
+            for bk in Bk.cgf:
+                for bl in Bl.cgf:
+                    Eri = electron_repulsion_integral(bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
+                    Eri *= bi.k * bj.k * bk.k * bl.k
+                    g += Eri
+    return ((i, j, k, l), g)
 
 
 def overlap_integral(e1, e2, R1, R2, ang1, ang2):
@@ -99,7 +155,7 @@ def overlap_integral(e1, e2, R1, R2, ang1, ang2):
 
 def kinetic_energy_integral(e1, e2, R1, R2, ang1, ang2):
     """
-    [1|\\Delta^{2}|2]
+    [1|/Delta^{2}|2]
     """
     K = e2*(2*sum(ang2)+3) * __S(e1, e2, R1, R2, ang1, ang2)
     ang2 = ang2.copy()
@@ -138,7 +194,7 @@ def nuclear_attraction_integral(e1, e2, R1, R2, ang1, ang2, R3, Z):
                                     for k in range(int((n-2*t)/2)+1):
                                         vz = __vi(n, t, k, e1+e2, R1[2], R2[2], ang1[2], ang2[2], R3[2], P[2])
                                         nu  = l+m+n-2*(r+s+t)-(i+j+k)
-                                        F = __BoysFunction((e1+e2)*MPR3, nu)
+                                        F = __BoysFunction(nu, MPR3*(e1+e2))
                                         V += vx * vy * vz * F
     V *= -Z * 2*np.pi/(e1+e2) * __overlap_integral(e1, e2, R1, R2)
     V *= N(e1, ang1) * N(e2, ang2)
@@ -181,21 +237,15 @@ def electron_repulsion_integral(e1, e2, e3, e4, R1, R2, R3, R4, ang1, ang2, ang3
                                                                 gz = __gi(n,np_,t,tp,k, ang1[2],ang2[2],R1[2],R2[2],P[2],ep, ang3[2],ang4[2],R3[2],R4[2],Q[2],eq)
                                                                 
                                                                 nu = l+lp+m+mp+n+np_-2*(r+rp+s+sp+t+tp)-(i+j+k)
-                                                                F = __BoysFunction(MPQ/delta, nu)
+                                                                F = __BoysFunction(nu, MPQ/delta)
                                                                 G += gx * gy * gz * F
-    G *= (2*np.pi**2)/(ep*eq) 
+    G *= (2*np.pi**2)/(ep*eq)
     G *= np.sqrt(np.pi/(ep+eq))
     G *= __overlap_integral(e1, e2, R1, R2)
     G *= __overlap_integral(e3, e4, R3, R4)
     G *= N(e1, ang1) * N(e2, ang2) * N(e3, ang3) * N(e4, ang4)
     return G
 
-
-def __BoysFunction(x, nu):
-    if x < 1e-7:
-        return (2*nu+1)**(-1) - x*(2*nu+3)**(-1)
-    else:
-        return (1/2) * x**(-(nu+0.5)) * special.gamma(nu+0.5) * special.gammainc(nu+0.5,x)
 
 def __overlap_integral(e1, e2, R1, R2):
     I = np.exp( -e1*e2/(e1+e2) * dot_product(R1, R2) )
@@ -246,3 +296,9 @@ def __ck(k, l, m, a, b):
             if j + i == k:
                 c += special.binom(l, i) * special.binom(m, j) * a**(l-i) * b**(m-j)
     return c
+
+def __BoysFunction(nu, x):
+    if x < 1e-6:
+        return (2*nu+1)**(-1) - x*(2*nu+3)**(-1)
+    else:
+        return Lib_boysGaussJacobi.boysGaussJacobi(ctypes.c_int(nu), ctypes.c_double(x))

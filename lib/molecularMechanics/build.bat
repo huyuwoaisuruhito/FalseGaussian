@@ -1,0 +1,1 @@
+gfortran -O2 -shared -g ./molecularMechanics.f90 -o ./../.build/molecularMechanics.lib

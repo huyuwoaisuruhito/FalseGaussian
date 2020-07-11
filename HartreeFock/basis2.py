@@ -2,7 +2,7 @@ import json
 import numpy as np
 from scipy import misc, special
 
-root = 'HartreeFork/Basis/'
+root = 'HartreeFock/Basis/'
 
 class PGF:
     def __init__(self, k, exp, R, ang):

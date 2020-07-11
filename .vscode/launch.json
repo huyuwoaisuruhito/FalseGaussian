@@ -5,26 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: heh",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "args": ["cjkk/code/heh.xyz"]
-        },
-        {
-            "name": "Python: 当前文件",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
             "name": "__init__",
             "type": "python",
             "request": "launch",
             "program": "__init__.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "preLaunchTask": "task build all"
+        },
+        {
+            "name": "Python: current file",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
         }
     ]
 }

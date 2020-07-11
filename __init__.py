@@ -1,6 +1,7 @@
 import Display.gui as gui
-import HartreeFork.RHF
+import HartreeFock.RHF as rhf
 
 if __name__ == "__main__":
-    pass
+    atoms = [[8, 0.000000, 0.000000, 0.227000], [1, 0.000000, 1.353000,-0.908000], [1, 0.000000,-1.353000,-0.908000]]
+    rhf.RHF(10, atoms, '3-21g', 'H2O')
     # gui.Main_windows()

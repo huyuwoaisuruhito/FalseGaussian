@@ -4,14 +4,15 @@ from timeit import default_timer as timer
 import numpy as np
 from scipy import linalg
 
-import basis2 as bs2
-import molecularIntegrals as mi
+import HartreeFock.basis2 as bs2
+import HartreeFock.molecularIntegrals as mi
 
 debug = 0
 
-MAX_iteration = 500
-TEMP_ROOT_DIR = '.temp'
-Rate = 1
+SCF_MAX_iteration = 200
+SCF_ERROE = 1e-6
+TEMP_DIR = '.temp'
+Rate = 0.8
 
 np.set_printoptions(threshold=np.inf)
 np.set_printoptions(precision=5)
@@ -19,11 +20,13 @@ np.set_printoptions(linewidth=200)
 np.set_printoptions(suppress=True)
 
 def RHF(N, atoms, bname, fname):
+    name = '{}/{}.{}'.format(TEMP_DIR, fname, bname)
+
     B = bs2.Basis(bname+'.json')
     basis = B.make_basis(atoms)
 
     K = len(basis)
-    S, Hc, G = make_molecular_integrals(K, basis, atoms, bname, fname)
+    S, Hc, G = make_molecular_integrals(K, basis, atoms, name)
     Vnn = mi.nuclear_repulsion(atoms)
 
     X = linalg.sqrtm(linalg.inv(S))
@@ -34,7 +37,7 @@ def RHF(N, atoms, bname, fname):
 
     print('\nBegin the SCF iteration:')
     t = timer()
-    for iteration in range(MAX_iteration):
+    for iteration in range(SCF_MAX_iteration):
         E_old = E
         F = np.copy(Hc)
         for i in range(K):
@@ -47,11 +50,14 @@ def RHF(N, atoms, bname, fname):
         e, Cp = linalg.eigh(Fp)
         C = X @ Cp
 
+        nP = np.zeros((K,K))
         for i in range(K):
             for j in range(K):
-                P[i,j] = 0.0
                 for a in range(int(N/2)):
-                    P[i,j] += 2 * (C[i,a] * C[j,a])
+                    nP[i,j] += 2 * (C[i,a] * C[j,a])
+        
+        if (iteration>0):
+            P = nP*Rate + P*(1-Rate)
         
         if P.any()>2:
             print('Warning: Density Matrix Overflow')
@@ -65,22 +71,21 @@ def RHF(N, atoms, bname, fname):
         
         t, dt = timer(), timer() - t
         print('E (iteration {:2d}) = {:12.6f} \t in {:.4f} s'.format(count,E, dt))
-        if (abs(E-E_old) < 1e-5) and (iteration>0):
-            print('\nEt = Eel + Vnn')
-            print('   = {:.6f} + {:.6f}'.format(E, Vnn))
-            print('   = {:.6f} Hartrees ({} iterations)\n'.format(E+Vnn, count))
-            print('P:\n'+str(P))
+        if (abs(E-E_old) < SCF_ERROE) and (iteration>0):
+            print('\n====== SCP converged in {} steps ======'.format(count))
+            print('\nE = Eel + Vnn')
+            print('  = {:.6f} + {:.6f}'.format(E, Vnn))
+            print('  = {:.6f} Hartrees ({} iterations)\n'.format(E+Vnn, count))
+            dump_matrix(name, 'C', C)
+            dump_matrix(name, 'P', P)
             return E + Vnn
         
         count += 1
     
     print('!!!Iteration does not converge!!!')
     return -1
-    
 
-
-def make_molecular_integrals(K, basis, atoms, bname, fname):
-    name = '{}/{}.{}'.format(TEMP_ROOT_DIR, fname, bname)
+def make_molecular_integrals(K, basis, atoms, name):
     
     t = timer()
     if os.path.exists(name+'.S.npy') and not debug:
@@ -114,7 +119,7 @@ def make_molecular_integrals(K, basis, atoms, bname, fname):
         G = np.load(name+'.G.npy')
     else:
         G = np.zeros((K,K,K,K))
-        mi.buildG(basis, G)
+        mi.buildG_P(basis, G)
         dump_matrix(name, 'G', G)
     t, dt = timer(), timer() - t
     print('Prepare two-electron integral matrix in:{:.4f} s'.format(dt))

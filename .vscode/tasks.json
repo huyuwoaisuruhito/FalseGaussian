@@ -1,0 +1,69 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "task g++",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/../build/${fileBasenameNoExtension}.exe"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "task gfortran",
+            "type": "shell",
+            "command": "gfortran",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/../build/${fileBasenameNoExtension}.exe"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "task gfortran_so",
+            "type": "shell",
+            "command": "gfortran",
+            "args": [
+                "-shared",
+                "-fPIC",
+                "-O2",
+                "-g",
+                "-o",
+                "${fileDirname}/../build/${fileBasenameNoExtension}.os",
+                "${file}"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$gcc"
+        },
+        {
+            "label": "task build all",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "./lib/build.py"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$gcc"
+        }
+    ]
+}
