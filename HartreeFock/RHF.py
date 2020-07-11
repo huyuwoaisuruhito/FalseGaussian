@@ -7,11 +7,14 @@ from scipy import linalg
 import HartreeFock.basis2 as bs2
 import HartreeFock.molecularIntegrals as mi
 
-debug = 0
+A0 = 0.52917721067
+
+debug = 1
+
+TEMP_DIR = '.temp'
 
 SCF_MAX_iteration = 200
 SCF_ERROE = 1e-6
-TEMP_DIR = '.temp'
 Rate = 0.8
 
 np.set_printoptions(threshold=np.inf)
@@ -19,11 +22,17 @@ np.set_printoptions(precision=5)
 np.set_printoptions(linewidth=200)
 np.set_printoptions(suppress=True)
 
-def RHF(N, atoms, bname, fname):
+
+def A_2_atom_unit(atoms):
+    for a in atoms:
+        for i in range(1,4):
+            a[i] /= A0
+
+def RHF(N, atoms, bname, fname, expand=0):
     name = '{}/{}.{}'.format(TEMP_DIR, fname, bname)
 
     B = bs2.Basis(bname+'.json')
-    basis = B.make_basis(atoms)
+    basis = B.make_basis(atoms, expand)
 
     K = len(basis)
     S, Hc, G = make_molecular_integrals(K, basis, atoms, name)
@@ -130,7 +139,3 @@ def make_molecular_integrals(K, basis, atoms, name):
 def dump_matrix(name, N, M):
     np.save(open('{}.{}.npy'.format(name, N),'wb'), M)
     open('{}.{}.txt'.format(name, N),'w').write( str(M) )
-
-if __name__ == '__main__':
-    atoms = [[8, 0.000000, 0.000000, 0.227000], [1, 0.000000, 1.353000,-0.908000], [1, 0.000000,-1.353000,-0.908000]]
-    RHF(10, atoms, '3-21g', 'H2O')
