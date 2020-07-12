@@ -5,7 +5,7 @@ from scipy import linalg
 
 Rate = 0.6
 
-def RHF_A(HFArchive):
+def HF_A(HFArchive):
     RHF(HFArchive.N, HFArchive.K, 
         HFArchive.S, HFArchive.Hc, 
         HFArchive.G, HFArchive.Vnn, 
@@ -37,7 +37,7 @@ def RHF(N, K, S, Hc, G, Vnn, SCF_MAX_iteration=200, SCF_ERROR=1e-6, HFArchive=No
         nP = np.zeros((K,K))
         for i in range(K):
             for j in range(K):
-                for a in range(int(N)):
+                for a in range(int(N[0])):
                     nP[i,j] += 2 * (C[i,a] * C[j,a])
         
         if (iteration>0):
