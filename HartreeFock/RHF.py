@@ -60,14 +60,14 @@ def RHF(N, K, S, Hc, G, Vnn, SCF_MAX_iteration=200, SCF_ERROR=1e-6, HFArchive=No
             print('\nE = Eel + Vnn')
             print('  = {:.6f} + {:.6f}'.format(E, Vnn))
             print('  = {:.6f} Hartrees ({} iterations)\n'.format(E+Vnn, count))
-            print('e: ', str(e))
-            print('\n')
+            print('e: ', e)
+            print()
             if HFArchive:
                 HFArchive.e = e
                 HFArchive.X = X
                 HFArchive.C = C
                 HFArchive.P = P
-                HFArchive.H = (Hc+F)/2
+                HFArchive.F = F
             return E + Vnn
         
         count += 1

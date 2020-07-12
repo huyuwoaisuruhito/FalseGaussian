@@ -4,27 +4,28 @@ from timeit import default_timer as timer
 
 import numpy as np
 
-import HartreeFock.basis2 as bs2
-import HartreeFock.ci as ci
+import HartreeFock.basis2 as bs
+import HartreeFock.ci2 as ci
 import HartreeFock.molecularIntegrals as mi
 import HartreeFock.rhf as rhf
 
 np.set_printoptions(threshold=np.inf)
 np.set_printoptions(precision=5)
-np.set_printoptions(linewidth=200)
+np.set_printoptions(linewidth=2000)
 np.set_printoptions(suppress=True)
 
 A0 = 0.52917721067
 
 class HFArchive:
 
-    def __init__(self, N, atoms, bname, fname, expand=0, debug=0):
+    def __init__(self, N, atoms, bname, fname, hf_type=2, expand=0, debug=0):
 
         self.TEMP_DIR = '.temp'
         self.SCF_MAX_iteration = 200
         self.SCF_ERROR = 1e-6
 
-        self.N = N//2
+        self.hf_type = hf_type #1 --UHF; 2 --RHF
+        self.N = N//hf_type
         A_2_atom_unit(atoms)
         self.atoms = atoms
         self.expand = expand
@@ -34,7 +35,7 @@ class HFArchive:
         if not os.path.exists(path):
             os.makedirs(path)
 
-        self.basis = bs2.Basis(bname+'.json').make_basis(atoms, expand)
+        self.basis = bs.Basis(bname+'.json').make_basis(atoms, hf_type, expand)
         self.K = len(self.basis)
 
         self.Vnn = None
@@ -47,6 +48,8 @@ class HFArchive:
         self.C = None
         self.P = None
         self.H = None
+
+        self.CI_M = {}
 
     def init_molecular_integrals(self):
         self.Vnn = mi.nuclear_repulsion(self.atoms)

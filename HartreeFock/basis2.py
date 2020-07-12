@@ -51,7 +51,7 @@ class Basis:
                     _(ang, [0, 0, 0], i)
         return basis
 
-    def make_basis(self, atoms, type='ortho', expand=0):
+    def make_basis(self, atoms, hf_type, expand=0):
         for n, x, y, z in atoms:
             self.basis += self.__make_base(n, np.array([x, y, z]), expand)
         return self.basis

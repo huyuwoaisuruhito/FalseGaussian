@@ -114,12 +114,11 @@ def buildG_P(basis, G):
         if N % 1000 == 1:
             t, dt = timer(), timer() - t
             print('Computed '+ str(N-1) + ' of ' + str(K) + '^4='
-                 + str(K**4) + ' two-electron integrals in {:.4f} s.'.format(dt))
+                 + str(K**4) + ' two-electron integrals. This cycle takes {:.4f} s.'.format(dt))
 
-    n = 8
     K = len(basis)
-    import multiprocessing
-    p = multiprocessing.Pool(n)
+    from multiprocessing import Pool
+    p = Pool(8)
     for i in range(K):
         for j in range(K):
             for k in range(K):
