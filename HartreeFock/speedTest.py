@@ -1,7 +1,7 @@
 import timeit
 from scipy import special
 
-f_st ='''
+f_st = '''
 import ctypes
 import timeit
 from timeit import default_timer as timer
@@ -25,7 +25,7 @@ def __theta(l, l1, l2, a, b, r, g):
     return the
 '''
 
-f_gi ='''
+f_gi = '''
 (l,lp,r,rp,i, lA,lB,Ai,Bi,Pi,gP, lC,lD,Ci,Di,Qi,gQ) = (0, 2, 0, 0, 1, 0, 0, 0.0, 0.0, 0.0, 370.4678, 1, 1, 0.0, 0.0, 0.0, 8.97914)
 delta = 1/(4*gP) + 1/(4*gQ)
 gi  = (-1)**l 
@@ -58,5 +58,6 @@ __BoysFunction(2008.7598897159996, 1)
 if __name__ == "__main__":
     # print(timeit.timeit(stmt=f_bf_0, setup=f_st, number=10000)) #0.0274 s
     # print(timeit.timeit(stmt=f_bf_1, setup=f_st, number=10000)) #0.0147 s
-    print(timeit.timeit(stmt=f_gi, setup=f_st, number=10000)) #0.5632 s
-    print(timeit.timeit(stmt='special.factorial2(3, exact=True)', setup=f_st, number=90000)) #0.1013 s
+    print(timeit.timeit(stmt=f_gi, setup=f_st, number=10000))  # 0.5632 s
+    print(timeit.timeit(stmt='special.factorial2(3, exact=True)',
+                        setup=f_st, number=90000))  # 0.1013 s

@@ -16,6 +16,7 @@ np.set_printoptions(suppress=True)
 
 A0 = 0.52917721067
 
+
 class HFArchive:
 
     def __init__(self, N, atoms, bname, fname, hf_type=1, expand=0, fresh=0):
@@ -50,11 +51,10 @@ class HFArchive:
         self.P = None
         self.H = None
 
-        self.CI_M = {}
-
     def init_molecular_integrals(self):
         self.Vnn = mi.nuclear_repulsion(self.atoms)
-        self.S, self.T, self.V, self.G = make_molecular_integrals(self.K, self.basis, self.atoms, self.name, self.fresh)
+        self.S, self.T, self.V, self.G = make_molecular_integrals(
+            self.K, self.basis, self.atoms, self.name, self.fresh)
         self.Hc = self.T + self.V
 
     def dump(self):
@@ -74,17 +74,19 @@ class HFArchive:
     def CI(self, level):
         return ci.CI_A(self, level)
 
+
 def A_2_atom_unit(atoms):
     for a in atoms:
-        for i in range(1,4):
+        for i in range(1, 4):
             a[i] /= A0
+
 
 def make_molecular_integrals(K, basis, atoms, name, fresh):
     t = timer()
     if os.path.exists(name+'.S.npy') and not fresh:
         S = np.load(name+'.S.npy')
     else:
-        S = np.zeros((K,K))
+        S = np.zeros((K, K))
         mi.buildS(basis, S)
         dump_matrix(name, 'S', S)
     t, dt = timer(), timer() - t
@@ -93,7 +95,7 @@ def make_molecular_integrals(K, basis, atoms, name, fresh):
     if os.path.exists(name+'.T.npy') and not fresh:
         T = np.load(name+'.T.npy')
     else:
-        T = np.zeros((K,K))
+        T = np.zeros((K, K))
         mi.buildT(basis, T)
         dump_matrix(name, 'T', T)
     t, dt = timer(), timer() - t
@@ -102,7 +104,7 @@ def make_molecular_integrals(K, basis, atoms, name, fresh):
     if os.path.exists(name+'.V.npy') and not fresh:
         V = np.load(name+'.V.npy')
     else:
-        V = np.zeros((K,K))
+        V = np.zeros((K, K))
         mi.buildV(basis, atoms, V)
         dump_matrix(name, 'V', V)
     t, dt = timer(), timer() - t
@@ -111,7 +113,7 @@ def make_molecular_integrals(K, basis, atoms, name, fresh):
     if os.path.exists(name+'.G.npy') and not fresh:
         G = np.load(name+'.G.npy')
     else:
-        G = np.zeros((K,K,K,K))
+        G = np.zeros((K, K, K, K))
         if K > 8:
             mi.buildG_P(basis, G)
         else:
@@ -122,7 +124,8 @@ def make_molecular_integrals(K, basis, atoms, name, fresh):
 
     return (S, T, V, G)
 
+
 def dump_matrix(name, N, M, txt=1):
-    np.save(open('{}.{}.npy'.format(name, N),'wb'), M)
+    np.save(open('{}.{}.npy'.format(name, N), 'wb'), M)
     if txt:
-        open('{}.{}.txt'.format(name, N),'w').write(str(M))
+        open('{}.{}.txt'.format(name, N), 'w').write(str(M))

@@ -5,13 +5,15 @@ from scipy import linalg
 
 Rate = 0.6
 
+
 def HF_A(HFArchive):
-    return HF(  HFArchive.N, HFArchive.K, 
-                HFArchive.S, HFArchive.Hc, 
-                HFArchive.G, HFArchive.Vnn, 
-                HFArchive.hf_type, HFArchive.SCF_MAX_iteration, 
-                HFArchive.SCF_ERROR, HFArchive.debug, 
-                HFArchive )
+    return HF(HFArchive.N, HFArchive.K,
+              HFArchive.S, HFArchive.Hc,
+              HFArchive.G, HFArchive.Vnn,
+              HFArchive.hf_type, HFArchive.SCF_MAX_iteration,
+              HFArchive.SCF_ERROR, HFArchive.debug,
+              HFArchive)
+
 
 def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, HFArchive=None):
     '''
@@ -19,10 +21,10 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
     oS = 2 UHF
     '''
     print('\n========== Begin {} =========='.format(['RHF', 'UHF'][oS-1]))
-    
-    if oS == 2 and len(N)==1:
-        N = [ N[0]-N[0]//2, N[0]//2 ]
-    elif oS == 1 and len(N)==1:
+
+    if oS == 2 and len(N) == 1:
+        N = [N[0]-N[0]//2, N[0]//2]
+    elif oS == 1 and len(N) == 1:
         N = [N[0]//2]
     else:
         raise RuntimeError()
@@ -30,8 +32,8 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
     print('\nElectrons: '+str(N)+'\n')
 
     X = linalg.sqrtm(linalg.inv(S))
-    C = np.zeros((oS,K,K))
-    P = np.zeros((oS,K,K))
+    C = np.zeros((oS, K, K))
+    P = np.zeros((oS, K, K))
 
     inisial_gasse(oS, K, P)
 
@@ -42,18 +44,18 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
     for iteration in range(SCF_MAX_iteration):
         E_old = E
         E = 0.0
-        F = np.zeros((oS,K,K))
-        nP = np.zeros((oS,K,K))
+        F = np.zeros((oS, K, K))
+        nP = np.zeros((oS, K, K))
         for s in range(oS):
             nE = 0.0
             for i in range(K):
                 for j in range(K):
-                    F[s,i,j] = Hc[i,j]
+                    F[s, i, j] = Hc[i, j]
                     for k in range(K):
                         for l in range(K):
-                            F[s,i,j] -=  1/2  * P[s,k,l] * G[i,k,j,l]
+                            F[s, i, j] -= 1/2 * P[s, k, l] * G[i, k, j, l]
                             for t in range(oS):
-                                F[s,i,j] +=  1/oS * P[t,k,l] * G[i,j,k,l]
+                                F[s, i, j] += 1/oS * P[t, k, l] * G[i, j, k, l]
 
             Fp = X.T @ F[s] @ X
             e, Cp = linalg.eigh(Fp)
@@ -62,24 +64,25 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
             for i in range(K):
                 for j in range(K):
                     for a in range(N[s]):
-                        nP[s,i,j] += 2 * (C[s,i,a] * C[s,j,a])
-            
+                        nP[s, i, j] += 2 * (C[s, i, a] * C[s, j, a])
+
             P[s] = nP[s]*Rate + P[s]*(1-Rate)
 
-            if P.any()>2:
+            if P.any() > 2:
                 print('Warning: Density Matrix Overflow')
             # print('\nDensity Matrix (iteration {:2d})'.format(count))
             # print(str(P))
 
             for i in range(K):
                 for j in range(K):
-                    nE +=  1/2 * P[s,j,i] * (Hc[i,j] + F[s,i,j]) / oS
+                    nE += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j]) / oS
             # print('s: ', s, 'E: ', nE)
             E += nE
-         
+
         t, dt = timer(), timer() - t
-        print('E (iteration {:2d}) = {:12.6f} \t in {:.4f} s'.format(count,E, dt))
-        if (abs(E-E_old) < SCF_ERROR) and (iteration>0):
+        print('E (iteration {:2d}) = {:12.6f} \t in {:.4f} s'.format(
+            count, E, dt))
+        if (abs(E-E_old) < SCF_ERROR) and (iteration > 0):
             print('\n====== SCP converged in {} steps ======'.format(count))
             print('\nE = Eel + Vnn')
             print('  = {:.6f} + {:.6f}'.format(E, Vnn))
@@ -97,13 +100,14 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
                 HFArchive.C = C
                 HFArchive.P = P
             return E + Vnn
-        
+
         count += 1
-    
+
     print('!!!SCF iteration does not converge!!!')
     return -1
+
 
 def inisial_gasse(oS, K, P):
     for s in range(oS):
         np.random.seed(10)
-        P[s,:,:] = np.random.rand(K,K)
+        P[s, :, :] = np.random.rand(K, K)

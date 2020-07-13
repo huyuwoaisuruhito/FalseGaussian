@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # atoms2 = [[1, 0.000000, 0.000000, 0.370065], [1, 0.000000, 0.000000,-0.370065]]
     # # hfA = HFArchive(2, atoms2, 'sto-3g', 'H2', fresh=1)
     atoms3 = [[1, 0.000000, 0.000000, 1], [1, 0.000000, 0.000000,-1]]
-    hfA = HFArchive(2, atoms3, '6-31g', 'H2', fresh=1)
+    hfA = HFArchive(2, atoms3, 'sto-3g', 'H2', fresh=1)
     
     hfA.init_molecular_integrals()
     hfA.HF(1)
