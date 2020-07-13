@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 import numpy as np
 
 import HartreeFock.basis as bs
-import HartreeFock.ci as ci
+import HartreeFock.ci2 as ci
 import HartreeFock.molecularIntegrals as mi
 import HartreeFock.hf as hf
 
@@ -22,8 +22,8 @@ class HFArchive:
     def __init__(self, N, atoms, bname, fname, hf_type=1, expand=0, fresh=0):
 
         self.TEMP_DIR = '.temp'
-        self.SCF_MAX_iteration = 200
-        self.SCF_ERROR = 1e-6
+        self.SCF_MAX_iteration = 1000
+        self.SCF_ERROR = 1e-8
         self.debug = 0
 
         self.hf_type = hf_type

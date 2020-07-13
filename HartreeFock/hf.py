@@ -3,7 +3,7 @@ from timeit import default_timer as timer
 import numpy as np
 from scipy import linalg
 
-Rate = 0.6
+Rate = 0.5
 
 
 def HF_A(HFArchive):
@@ -15,7 +15,7 @@ def HF_A(HFArchive):
               HFArchive)
 
 
-def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, HFArchive=None):
+def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration, SCF_ERROR, debug=0, HFArchive=None):
     '''
     oS = 1 RHF
     oS = 2 UHF
@@ -79,9 +79,9 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
             # print('s: ', s, 'E: ', nE)
             E += nE
 
-        t, dt = timer(), timer() - t
-        print('E (iteration {:2d}) = {:12.6f} \t in {:.4f} s'.format(
-            count, E, dt))
+        if count%10 == 0:
+            t, dt = timer(), timer() - t
+            print('E (iteration {:2d}) = {:12.6f} \t 10 iteration in {:.4f} s'.format(count, E, dt))
         if (abs(E-E_old) < SCF_ERROR) and (iteration > 0):
             print('\n====== SCP converged in {} steps ======'.format(count))
             print('\nE = Eel + Vnn')
@@ -91,14 +91,13 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
             # for s in range(oS):
             #     P_ += P[s,:,:]
             # print( P_ )
-            # print('e: ', e)
+            print('e: ', e)
             # print(str(P))
-            print()
             if HFArchive:
                 HFArchive.e = e
                 HFArchive.X = X
                 HFArchive.C = C
-                HFArchive.P = P
+                HFArchive.F = F
             return E + Vnn
 
         count += 1
@@ -108,6 +107,6 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration=200, SCF_ERROR=1e-6, debug=0, 
 
 
 def inisial_gasse(oS, K, P):
+    np.random.seed(10)
     for s in range(oS):
-        np.random.seed(10)
         P[s, :, :] = np.random.rand(K, K)

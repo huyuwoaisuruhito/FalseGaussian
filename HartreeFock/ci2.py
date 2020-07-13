@@ -5,14 +5,14 @@ from scipy import linalg
 
 
 def CI_A(HFArchive, level):
-    return CI(HFArchive.N, HFArchive.K, HFArchive.X, 
+    return CI(HFArchive.N, HFArchive.K, HFArchive.X,
               HFArchive.Hc, HFArchive.G,
               HFArchive.C, HFArchive.Vnn, HFArchive.F,
-              level, HFArchive.hf_type,
+              level, 
               HFArchive.debug, HFArchive)
 
 
-def CI(N, K, X, Hc, G, C, Vnn, _F, level, oS=1, debug=0, HFArchive=None):
+def CI(N, K, X, Hc, G, C, Vnn, F_, level, debug=0, HFArchive=None):
     '''
     CI方法，已测试
     level: 计算到第level重激发，为0时计算FCI
@@ -20,9 +20,9 @@ def CI(N, K, X, Hc, G, C, Vnn, _F, level, oS=1, debug=0, HFArchive=None):
     t = timer()
     print('\n========== Begin CI ==========\n')
 
-    if oS == 1 and len(N) == 1:
-        N = [N[0]//2]
-    elif oS == 2:
+    if 2 == 1 and len(N) == 1:
+        N = [N[0]//2, N[0]//2]
+    elif 2 == 2:
         if len(N) == 1:
             N = [N[0]-N[0]//2, N[0]//2]
         elif len(N) == 2:
@@ -32,31 +32,36 @@ def CI(N, K, X, Hc, G, C, Vnn, _F, level, oS=1, debug=0, HFArchive=None):
     else:
         raise RuntimeError()
 
-    exc_ob = [[]]*3
-    for s in range(oS):
-        exc_ob_s = [[[], []]]
+    exc_ob = [[], [], []]
+    for s in range(2):
+        
         if level == 0 or level > min(N[s], K-N[s]):
             max_c = min(N[s], K-N[s])
         else:
             max_c = level
-        __make_ci_c(N[s], s, oS, K, max_c, n=N[s], res=exc_ob_s)
+        
+        exc_ob_s = [[[], []]]
+        __make_ci_c(s, N[s], K, max_c, n=N[s], res=exc_ob_s)
         exc_ob[s] = exc_ob_s[1:]
-        if s == 1:
-            for n in exc_ob[0]:
-                for m in exc_ob[1]:
-                    zipped = [n[0]+m[0], n[1]+m[1]]
-                    exc_ob[2].append(zipped)
+    for n in exc_ob[0]:
+        for m in exc_ob[1]:
+            zd = [n[0]+m[0], n[1]+m[1]]
+            exc_ob[2].append(zd)
+
     exc_ob = [[[], []]] + exc_ob[0] + exc_ob[1] + exc_ob[2]
     exc_ob.sort(key=lambda x: len(x[0]))
-    if level: exc_ob = [ _ for _ in exc_ob if len(_[0])<=level]
-    print(exc_ob)
+    
+    # exc_ob = [a for a in exc_ob if a[0][0]==0]
+    if level:
+        exc_ob = [ _ for _ in exc_ob if len(_[0])<=level]
+
     CI_K = len(exc_ob)
-
+    
+    print(exc_ob)
     t, dt = timer(), timer() - t
-    print('Make {} excited determinant wavefunctions in {:.4f} s\n'.format(CI_K, dt))
+    print('Make {} excited determinant wavefunctions in {:.4f} s'.format(CI_K, dt))
 
-    E = __naive_method(sum(N), N, K, X, Hc, G, C, Vnn, _F, 
-                       level, oS, CI_K, exc_ob, debug)
+    E = __naive_method(sum(N), N, K, X, Hc, G, F_, C, Vnn, level, CI_K, exc_ob, debug)
 
     print('Solved CI matrix in {:.4f} s'.format(dt))
     print('\n====== CI in level:{} ======'.format(level))
@@ -67,7 +72,32 @@ def CI(N, K, X, Hc, G, C, Vnn, _F, level, oS=1, debug=0, HFArchive=None):
     return E + Vnn
 
 
-def __naive_method(sN, N, K, X, Hc, G, C, Vnn, _F, level, oS, CI_K, exc_ob, debug):
+def __make_ci_c(s, N, K, max_c, count=0, m=0, n=0, a=[], r=[], res=[]):
+    if count == max_c:
+        return
+    for i in range(m, N):
+        for j in range(n, K):
+            a.append(i*2+s)
+            r.append(j*2+s)
+            res.append([a.copy(), r.copy()])
+            __make_ci_c(s, N, K, max_c, count+1, i+1, j+1, a, r, res)
+            a.pop()
+            r.pop()
+
+def __make_ci_c_2(N, K, max_c, count=0, m=0, n=0, a=[], r=[], res=[]):
+    if count == max_c:
+        return
+    for s in range(2):
+        for i in range(m, N):
+            for j in range(n, K):
+                a.append(i*2+s)
+                r.append(j*2+s)
+                res.append([a.copy(), r.copy()])
+                __make_ci_c( N, K, max_c, count+1, i+1, j+1, a, r, res)
+                a.pop()
+                r.pop()
+
+def __naive_method(sN, N, K, X, Hc, G, F_, C, Vnn, level, CI_K, exc_ob, debug, **kw):
 
     def __callback(res):
         nonlocal CI_M, n, t
@@ -76,9 +106,9 @@ def __naive_method(sN, N, K, X, Hc, G, C, Vnn, _F, level, oS, CI_K, exc_ob, debu
         CI_M[j, i] = CI_M[i, j]
         n += 1
         if n % 1000 == 1:
-            t, dt = timer(), timer() - t
+            dt = timer() - t
             print('Computed ' + str(n-1) + ' of ' + str(CI_K) + '^2='
-                  + str(CI_K**2) + ' CI matrix unit. This cycle takes {:.4f} s.'.format(dt))
+                  + str(CI_K**2) + ' CI matrix unit in {:.4f} s.'.format(dt))
         if i != j:
             n += 1
 
@@ -93,7 +123,7 @@ def __naive_method(sN, N, K, X, Hc, G, C, Vnn, _F, level, oS, CI_K, exc_ob, debu
                 if j <= i:
                     p.apply_async(__compute_ci_matrix_unit,
                                   args=(exc_ob1, exc_ob2, C, sN,
-                                        N, K, X, Hc, G, oS, i, j, _F),
+                                        N, K, X, Hc, G, i, j, F_),
                                   callback=__callback)
         p.close()
         p.join()
@@ -102,7 +132,7 @@ def __naive_method(sN, N, K, X, Hc, G, C, Vnn, _F, level, oS, CI_K, exc_ob, debu
             for j, exc_ob2 in enumerate(exc_ob):
                 if j <= i:
                     CI_M[i, j] = __compute_ci_matrix_unit(
-                        exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, i, j, _F)[0]
+                        exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, i, j, F_)[0]
                     CI_M[j, i] = CI_M[i, j]
 
     t, dt = timer(), timer() - t
@@ -111,51 +141,35 @@ def __naive_method(sN, N, K, X, Hc, G, C, Vnn, _F, level, oS, CI_K, exc_ob, debu
     print()
 
     e ,C = linalg.eigh(CI_M)
+    
     print('\ne: \n', e)
     print('\nC:\n ', C)
 
     return e[0]
 
-
-def __make_ci_c(N, s, oS, K, max_c, count=0, m=0, n=0, a=[], r=[], res=[]):
-    if count == max_c:
-        return
-    for i in range(m, N):
-        for j in range(n, K):
-            a.append(i*oS+s)
-            r.append(j*oS+s)
-            res.append([a.copy(), r.copy()])
-            __make_ci_c(N, s, oS, K, max_c, count+1, i+1, j+1, a, r, res)
-            a.pop()
-            r.pop()
-
-
-def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j, _F):
+def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, _i, _j, F_):
     '''
-    oS = 1
-    构造RHF的CI矩阵，已测试
+    本方法针对UHF
     '''
-    '''
-    oS = 2
-    构造UHF的CI矩阵，这是毫无必要的，，，虽然我写了，但这里还有问题。
-    在UHF下，N = [Na, Nb]，K为总自旋轨道数目，重新定义K为总RHF轨道数目
-    '''
+    if C.shape[0]==1:
+        C = np.append(C, np.copy(C), axis=0)
+        F_ = np.append(F_, np.copy(F_), axis=0)
 
-    pC1 = np.array([i for i in range(K*oS)])
+    pC1 = np.array([i for i in range(K*2)])
     for a, r in zip(*exc_ob1):
         a, r = a, r
         pC1[[r, a]] = pC1[[a, r]]
 
-    pC2 = np.array([i for i in range(K*oS)])
+    pC2 = np.array([i for i in range(K*2)])
     for a, r in zip(*exc_ob2):
         a, r = a, r
         pC2[[r, a]] = pC2[[a, r]]
 
-    dC = [(c1//oS, c1 % oS, c2//oS, c2 % oS)
-          for c1, c2 in zip(pC1[:sN], pC2[:sN]) if c1 != c2] * (3 - oS)
+    dC = [(c1//2, c1%2, c2//2, c2%2)
+          for c1, c2 in zip(pC1[:sN], pC2[:sN]) if c1 != c2] * (3 - 2)
 
     exc = set([(c[0],c[1])  for c in dC] + [(c[2],c[3])  for c in dC])
-    active = set([(c1//oS, c1%oS) for c1 in np.append(pC1[:sN], pC2[:sN])])
+    active = set([(c1//2, c1%2) for c1 in np.append(pC1[:sN], pC2[:sN])])
     active -= exc
 
     unit = 0
@@ -174,46 +188,46 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
                         if sm == sp and sn == sq:
                             unit += (C[sm, i, m] * C[sp, j, p] * C[sn, k, n]
                                      * C[sq, l, q] * G[i, j, k, l])  # [mp|nq]=J
-                        if sm == sn and sp == sq and oS == 2:
+                        if sm == sn and sp == sq:
                             unit -= (C[sm, i, m] * C[sn, j, n] * C[sp, k, p]
                                      * C[sq, l, q] * G[i, j, k, l])  # [mn|pq]=K
         return unit, _i, _j
 
-    P = np.zeros((oS, K, K))
+    P = np.zeros((2, K, K))
     C1 = np.copy(C)
     C2 = np.copy(C)
     for a, r in zip(*exc_ob1):
-        assert(a % oS == r % oS)
-        sa, a, r = a % oS, a//oS, r//oS
+        assert(a % 2 == r % 2)
+        sa, a, r = a % 2, a//2, r//2
         C1[sa, :, [r, a]] = C1[sa, :, [a, r]]
 
     for a, r in zip(*exc_ob2):
-        assert(a % oS == r % oS)
-        sa, a, r = a % oS, a//oS, r//oS
+        assert(a % 2 == r % 2)
+        sa, a, r = a % 2, a//2, r//2
         C2[sa, :, [r, a]] = C2[sa, :, [a, r]]
 
     for i in range(K):
         for j in range(K):
-            for s in range(oS):
+            for s in range(2):
                 for a in range(N[s]):
                     P[s, i, j] += 2 * (C1[s, i, a] * C2[s, j, a])
             # for a, s in active:
             #     P[s, i, j] += 2 * (C1[s, i, a] * C2[s, j, a])
 
-    F = np.zeros((oS, K, K))
-    for s in range(oS):
+    F = np.zeros((2, K, K))
+    for s in range(2):
         for i in range(K):
             for j in range(K):
                 F[s, i, j] = Hc[i, j]
                 for k in range(K):
                     for l in range(K):
                         F[s, i, j] -= 1/2 * P[s, k, l] * G[i, k, j, l]
-                        for t in range(oS):
-                            F[s, i, j] += 1/oS * P[t, k, l] * G[i, j, k, l]
+                        for t in range(2):
+                            F[s, i, j] += 1/2 * P[t, k, l] * G[i, j, k, l]
     
     # if len(dC) == 1 or (_i,_j)==(0,0):
-    #     I = np.zeros((oS, K, K))
-    #     for s in range(oS):
+    #     I = np.zeros((2, K, K))
+    #     for s in range(2):
     #         for i in range(K):
     #             for j in range(K):
     #                 for k in range(K):
@@ -233,20 +247,20 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
             return unit, _i, _j
         for i in range(K):
             for j in range(K):
-                unit += C[sm, i, m] * C[sp, j, p] * _F[sm, i, j]
+                unit += C[sm, i, m] * C[sp, j, p] * F_[sm, i, j]
         return unit, _i, _j
 
     if len(dC) == 0:
-        for s in range(oS):
+        for s in range(2):
             for i in range(K):
                 for j in range(K):
                     u = Hc[i, j]
                     for k in range(K):
                         for l in range(K):
                             u -= 1/4 * P[s, k, l] * G[i, k, j, l]
-                            for t in range(oS):
-                                u += 1/2 * P[t, k, l] * G[i, j, k, l] / oS
-                    unit += P[s, j, i] * u / oS
-                    # unit += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j]) / oS
+                            for t in range(2):
+                                u += 1/2 * P[t, k, l] * G[i, j, k, l] / 2
+                    unit += P[s, j, i] * u / 2
+                    # unit += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j]) / 2
 
         return unit, _i, _j
