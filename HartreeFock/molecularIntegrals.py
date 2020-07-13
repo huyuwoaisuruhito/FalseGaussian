@@ -41,8 +41,7 @@ def buildS(basis, S):
             for bi in Bi.cgf:
                 for bj in Bj.cgf:
                     S[i][j] += bi.k * bj.k * \
-                        overlap_integral(bi.exp, bj.exp, bi.R,
-                                         bj.R, bi.ang, bj.ang)
+                        overlap_integral(bi.exp, bj.exp, bi.R, bj.R, bi.ang, bj.ang)
             S[j][i] = S[i][j]
     return S
 
@@ -55,8 +54,7 @@ def buildT(basis, T):
             for bi in Bi.cgf:
                 for bj in Bj.cgf:
                     T[i][j] += bi.k * bj.k * \
-                        kinetic_energy_integral(
-                            bi.exp, bj.exp, bi.R, bj.R, bi.ang, bj.ang)
+                        kinetic_energy_integral(bi.exp, bj.exp, bi.R, bj.R, bi.ang, bj.ang)
             T[j][i] = T[i][j]
     return T
 
@@ -70,8 +68,8 @@ def buildV(basis, atoms, V):
                 for bj in Bj.cgf:
                     for Z, _x, _y, _z in atoms:
                         R3 = np.array([_x, _y, _z])
-                        V[i][j] += bi.k * bj.k * nuclear_attraction_integral(
-                            bi.exp, bj.exp, bi.R, bj.R, bi.ang, bj.ang, R3, Z)
+                        V[i][j] += bi.k * bj.k * \
+                            nuclear_attraction_integral(bi.exp, bj.exp, bi.R, bj.R, bi.ang, bj.ang, R3, Z)
             V[j][i] = V[i][j]
     return V
 
@@ -96,8 +94,8 @@ def buildG(basis, G):
                         for bj in Bj.cgf:
                             for bk in Bk.cgf:
                                 for bl in Bl.cgf:
-                                    Eri = electron_repulsion_integral(
-                                        bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
+                                    Eri = electron_repulsion_integral(bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, 
+                                                                      bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
                                     G[i][j][k][l] += bi.k * \
                                         bj.k * bk.k * bl.k * Eri
                     G[j][i][k][l] = G[i][j][k][l]
@@ -156,8 +154,8 @@ def __buildG_p(i, j, k, l, basis, G):
         for bj in Bj.cgf:
             for bk in Bk.cgf:
                 for bl in Bl.cgf:
-                    Eri = electron_repulsion_integral(
-                        bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
+                    Eri = electron_repulsion_integral(bi.exp, bj.exp, bk.exp, bl.exp, bi.R, bj.R, 
+                                                      bk.R, bl.R, bi.ang, bj.ang, bk.ang, bl.ang)
                     Eri *= bi.k * bj.k * bk.k * bl.k
                     g += Eri
     return ((i, j, k, l), g)
@@ -209,14 +207,14 @@ def nuclear_attraction_integral(e1, e2, R1, R2, ang1, ang2, R3, Z):
                 for m in range(ang1[1]+ang2[1]+1):
                     for s in range(int(m/2)+1):
                         for j in range(int((m-2*s)/2)+1):
-                            vy = __vi(
-                                m, s, j, e1+e2, R1[1], R2[1], ang1[1], ang2[1], R3[1], P[1])
+                            vy = __vi(m, s, j, e1+e2, R1[1], R2[1], 
+                                      ang1[1], ang2[1], R3[1], P[1])
 
                             for n in range(ang1[2]+ang2[2]+1):
                                 for t in range(int(n/2)+1):
                                     for k in range(int((n-2*t)/2)+1):
-                                        vz = __vi(
-                                            n, t, k, e1+e2, R1[2], R2[2], ang1[2], ang2[2], R3[2], P[2])
+                                        vz = __vi(n, t, k, e1+e2, R1[2], R2[2], 
+                                                  ang1[2], ang2[2], R3[2], P[2])
                                         nu = l+m+n-2*(r+s+t)-(i+j+k)
                                         F = __BoysFunction(nu, MPR3*(e1+e2))
                                         V += vx * vy * vz * F
@@ -253,22 +251,21 @@ def electron_repulsion_integral(e1, e2, e3, e4, R1, R2, R3, R4, ang1, ang2, ang3
                                 for mp in range(0, ang3[1]+ang4[1]+1):
                                     for sp in range(0, int(mp/2)+1):
                                         for j in range(0, int((m+mp-2*s-2*sp)/2)+1):
-                                            gy = __gi(
-                                                m, mp, s, sp, j, ang1[1], ang2[1], R1[1], R2[1], P[1], ep, ang3[1], ang4[1], R3[1], R4[1], Q[1], eq)
+                                            gy = __gi(m, mp, s, sp, j, ang1[1], ang2[1], R1[1], R2[1], 
+                                                      P[1], ep, ang3[1], ang4[1], R3[1], R4[1], Q[1], eq)
 
                                             for n in range(0, ang1[2]+ang2[2]+1):
                                                 for t in range(0, int(n/2)+1):
                                                     for np_ in range(0, ang3[2]+ang4[2]+1):
                                                         for tp in range(0, int(np_/2)+1):
                                                             for k in range(0, int((n+np_-2*t-2*tp)/2)+1):
-                                                                gz = __gi(
-                                                                    n, np_, t, tp, k, ang1[2], ang2[2], R1[2], R2[2], P[2], ep, ang3[2], ang4[2], R3[2], R4[2], Q[2], eq)
+                                                                gz = __gi(n, np_, t, tp, k, ang1[2], ang2[2], R1[2], R2[2], 
+                                                                          P[2], ep, ang3[2], ang4[2], R3[2], R4[2], Q[2], eq)
 
                                                                 nu = l+lp+m+mp+n+np_-2 * \
-                                                                    (r+rp+s+sp +
-                                                                     t+tp)-(i+j+k)
-                                                                F = __BoysFunction(
-                                                                    nu, MPQ/delta)
+                                                                    (r+rp+s+sp + t+tp) - \
+                                                                    (i+j+k)
+                                                                F = __BoysFunction(nu, MPQ/delta)
                                                                 G += gx * gy * gz * F
     G *= (2*np.pi**2)/(ep*eq)
     G *= np.sqrt(np.pi/(ep+eq))
@@ -311,7 +308,7 @@ def __gi(l, lp, r, rp, i, lA, lB, Ai, Bi, Pi, gP, lC, lD, Ci, Di, Qi, gQ):
     delta = 1/(4*gP) + 1/(4*gQ)
     gi = (-1)**l
     gi *= __theta(l, lA, lB, Pi-Ai, Pi-Bi, r, gP) * \
-        __theta(lp, lC, lD, Qi-Ci, Qi-Di, rp, gQ)
+          __theta(lp, lC, lD, Qi-Ci, Qi-Di, rp, gQ)
     gi *= (-1)**i * (2*delta)**(2*(r+rp))
     gi *= special.factorial(l+lp-2*r-2*rp, exact=True) * delta**i
     gi *= (Pi-Qi)**(l+lp-2*(r+rp+i))
@@ -332,8 +329,8 @@ def __ck(k, l, m, a, b):
     for i in range(l+1):
         for j in range(m+1):
             if j + i == k:
-                c += special.binom(l, i) * special.binom(m,
-                                                         j) * a**(l-i) * b**(m-j)
+                c += special.binom(l, i) * special.binom(m,j) * \
+                     a**(l-i) * b**(m-j)
     return c
 
 

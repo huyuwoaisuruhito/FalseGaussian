@@ -59,5 +59,4 @@ if __name__ == "__main__":
     # print(timeit.timeit(stmt=f_bf_0, setup=f_st, number=10000)) #0.0274 s
     # print(timeit.timeit(stmt=f_bf_1, setup=f_st, number=10000)) #0.0147 s
     print(timeit.timeit(stmt=f_gi, setup=f_st, number=10000))  # 0.5632 s
-    print(timeit.timeit(stmt='special.factorial2(3, exact=True)',
-                        setup=f_st, number=90000))  # 0.1013 s
+    print(timeit.timeit(stmt='special.factorial2(3, exact=True)', setup=f_st, number=90000))  # 0.1013 s

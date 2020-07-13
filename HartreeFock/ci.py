@@ -165,11 +165,11 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, N, K, Hc, G, oS, _i, _j):
                 for k in range(K):
                     for l in range(K):
                         if sm == sp and sn == sq:
-                            unit += C[sm, i, m] * C[sp, j, p] * C[sn, k,
-                                                                  n] * C[sq, l, q] * G[i, j, k, l]  # [mp|nq]=J
+                            unit += (C[sm, i, m] * C[sp, j, p] * C[sn, k, n]
+                                     * C[sq, l, q] * G[i, j, k, l])  # [mp|nq]=J
                         if sm == sn and sp == sq and oS == 2:
-                            unit += C[sm, i, m] * C[sn, j, n] * C[sp, k,
-                                                                  p] * C[sq, l, q] * G[i, j, k, l]  # [mn|pq]=K
+                            unit += (C[sm, i, m] * C[sn, j, n] * C[sp, k, p]
+                                     * C[sq, l, q] * G[i, j, k, l])  # [mn|pq]=K
         return unit, _i, _j
 
     P = np.zeros((oS, K, K))
