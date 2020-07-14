@@ -91,9 +91,9 @@ if __name__ == "__main__":
     # atoms1 = [[8, 0.000000, 0.000000, 0.227000], [1, 0.000000, 1.353000,-0.908000], [1, 0.000000,-1.353000,-0.908000]]
     # hfA = HFArchive(10, atoms1, '3-21g', 'H2O', fresh=0)
     atoms2 = [[1, 0.000000, 0.000000, 0.370065], [1, 0.000000, 0.000000,-0.370065]]
-    # hfA = HFArchive(2, atoms2, '6-31g(d,p)', 'H2', fresh=1)
-    hfA = HFArchive(2, atoms2, '3-21g', 'H2', fresh=1)
-    # hfA = HFArchive(2, atoms2, 'sto-3g', 'H2', fresh=0)
+    hfA = HFArchive(2, atoms2, '6-31g(d,p)', 'H2', fresh=1)
+    # hfA = HFArchive(2, atoms2, '3-21g', 'H2', fresh=1)
+    # hfA = HFArchive(2, atoms2, 'sto-3g', 'H2', fresh=1)
     # atoms3 = [[1, 0.000000, 0.000000, 1], [1, 0.000000, 0.000000, -1]]
     # hfA = HFArchive(2, atoms3, 'sto-3g', 'H2', fresh=1)
 

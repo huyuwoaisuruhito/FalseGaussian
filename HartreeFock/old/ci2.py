@@ -8,7 +8,7 @@ def CI_A(HFArchive, level):
     return CI(HFArchive.N, HFArchive.K, HFArchive.X, 
               HFArchive.Hc, HFArchive.G,
               HFArchive.C, HFArchive.Vnn, HFArchive.F,
-              level, HFArchive.hf_type,
+              level, 2,
               HFArchive.debug, HFArchive)
 
 
@@ -140,6 +140,9 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
     构造UHF的CI矩阵，这是毫无必要的，，，虽然我写了，但这里还有问题。
     在UHF下，N = [Na, Nb]，K为总自旋轨道数目，重新定义K为总RHF轨道数目
     '''
+    if C.shape[0] == 1:
+        C = np.append(C, np.copy(C), axis=0)
+        _F = np.append(_F, np.copy(_F), axis=0)
 
     pC1 = np.array([i for i in range(K*oS)])
     for a, r in zip(*exc_ob1):
@@ -154,9 +157,7 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
     dC = [(c1//oS, c1 % oS, c2//oS, c2 % oS)
           for c1, c2 in zip(pC1[:sN], pC2[:sN]) if c1 != c2] * (3 - oS)
 
-    exc = set([(c[0],c[1])  for c in dC] + [(c[2],c[3])  for c in dC])
-    active = set([(c1//oS, c1%oS) for c1 in np.append(pC1[:sN], pC2[:sN])])
-    active -= exc
+    active = pC1[:sN] + pC2[:sN]
 
     unit = 0
     if len(dC) > 2:# or ( (_i == 0 or _j == 0) and len(dC) == 1 ):
@@ -179,7 +180,6 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
                                      * C[sq, l, q] * G[i, j, k, l])  # [mn|pq]=K
         return unit, _i, _j
 
-    P = np.zeros((oS, K, K))
     C1 = np.copy(C)
     C2 = np.copy(C)
     for a, r in zip(*exc_ob1):
@@ -192,13 +192,15 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
         sa, a, r = a % oS, a//oS, r//oS
         C2[sa, :, [r, a]] = C2[sa, :, [a, r]]
 
+    P = np.zeros((oS, K, K))
     for i in range(K):
         for j in range(K):
             for s in range(oS):
                 for a in range(N[s]):
-                    P[s, i, j] += 2 * (C1[s, i, a] * C2[s, j, a])
-            # for a, s in active:
-            #     P[s, i, j] += 2 * (C1[s, i, a] * C2[s, j, a])
+                    na1 = pC1[2*a+s]//2
+                    na2 = pC2[2*a+s]//2
+                    if na1 == na2:
+                        P[s, i, j] += C[s, i, na1] * C[s, j,na2]
 
     F = np.zeros((oS, K, K))
     for s in range(oS):
@@ -207,25 +209,22 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
                 F[s, i, j] = Hc[i, j]
                 for k in range(K):
                     for l in range(K):
-                        F[s, i, j] -= 1/2 * P[s, k, l] * G[i, k, j, l]
-                        for t in range(oS):
-                            F[s, i, j] += 1/oS * P[t, k, l] * G[i, j, k, l]
+                            F[s, i, j] -= P[s, k, l] * G[i, k, j, l]
+                            F[s, i, j] += P[0, k, l] * G[i, j, k, l]
+                            F[s, i, j] += P[1, k, l] * G[i, j, k, l]
     
-    # if len(dC) == 1 or (_i,_j)==(0,0):
-    #     I = np.zeros((oS, K, K))
-    #     for s in range(oS):
-    #         for i in range(K):
-    #             for j in range(K):
-    #                 for k in range(K):
-    #                     for l in range(K):
-    #                         I[s, k, l] += C[s, i, k] * C[s, j, l] * _F[s, i, j]
-    #     if not (_i,_j)==(0,0):
-    #         print(dC[0][1], dC[0][0], dC[0][2])
-    #         print(I[dC[0][1], dC[0][0], dC[0][2]])
-    #     print(I)
-    #     # print('=')
-    #     # print(I)
-    #     print()
+    if len(dC) == 1:
+        I = np.zeros((oS, K, K))
+        for s in range(oS):
+            for i in range(K):
+                for j in range(K):
+                    for k in range(K):
+                        for l in range(K):
+                            I[s, k, l] += C[s, i, k] * C[s, j, l] * F[s, i, j]
+        # print(dC[0][1], dC[0][0], dC[0][2])
+        # print(I[dC[0][1], dC[0][0], dC[0][2]])
+        # print(I)
+        # print()
 
     if len(dC) == 1:
         m, sm, p, sp = dC[0]
@@ -233,20 +232,13 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, X, Hc, G, oS, _i, _j
             return unit, _i, _j
         for i in range(K):
             for j in range(K):
-                unit += C[sm, i, m] * C[sp, j, p] * _F[sm, i, j]
+                unit += C[sm, i, m] * C[sp, j, p] * F[sm, i, j]
         return unit, _i, _j
 
     if len(dC) == 0:
         for s in range(oS):
             for i in range(K):
                 for j in range(K):
-                    u = Hc[i, j]
-                    for k in range(K):
-                        for l in range(K):
-                            u -= 1/4 * P[s, k, l] * G[i, k, j, l]
-                            for t in range(oS):
-                                u += 1/2 * P[t, k, l] * G[i, j, k, l] / oS
-                    unit += P[s, j, i] * u / oS
-                    # unit += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j]) / oS
+                    unit += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j])
 
         return unit, _i, _j

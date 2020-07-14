@@ -176,32 +176,39 @@ def __compute_ci_matrix_unit(exc_ob1, exc_ob2, C, sN, N, K, Hc, G, _i, _j, F_):
                                      * C[sq, l, q] * G[i, j, k, l])  # [mn|pq]=K
         return unit, _i, _j
 
+    P = np.zeros((2, K, K))
+    for i in range(K):
+        for j in range(K):
+            for s in range(2):
+                for a in range(N[s]):
+                    na1 = pC1[2*a+s]//2
+                    na2 = pC2[2*a+s]//2
+                    if na1 == na2:
+                        P[s, i, j] += C[s, i, na1] * C[s, j,na2]
+
+    F = np.zeros((2, K, K))
+    for s in range(2):
+        for i in range(K):
+            for j in range(K):
+                F[s, i, j] = Hc[i, j]
+                for k in range(K):
+                    for l in range(K):
+                            F[s, i, j] -= P[s, k, l] * G[i, k, j, l]
+                            F[s, i, j] += P[0, k, l] * G[i, j, k, l]
+                            F[s, i, j] += P[1, k, l] * G[i, j, k, l]
+
     if len(dC) == 1:
         m, sm, p, sp = dC[0]
         if sm != sp:
             return unit, _i, _j
         for i in range(K):
             for j in range(K):
-                unit += C[sm, i, m] * C[sp, j, p] * F_[sm, i, j]
+                unit += C[sm, i, m] * C[sp, j, p] * F[sm, i, j]
         return unit, _i, _j
 
     if len(dC) == 0:
-        P = np.zeros((2, K, K))
-        for i in range(K):
-            for j in range(K):
-                for s in range(2):
-                    for a in range(N[s]):
-                        P[s, i, j] += 2 * \
-                            (C[s, i, pC1[2*a+s]//2] * C[s, j, pC2[2*a+s]//2])
-
         for s in range(2):
             for i in range(K):
                 for j in range(K):
-                    u = Hc[i, j]
-                    for k in range(K):
-                        for l in range(K):
-                            u -= 1/4 * P[s, k, l] * G[i, k, j, l]
-                            for t in range(2):
-                                u += 1/2 * P[t, k, l] * G[i, j, k, l] / 2
-                    unit += P[s, j, i] * u / 2
+                    unit += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j])
         return unit, _i, _j
