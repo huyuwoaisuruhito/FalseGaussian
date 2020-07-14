@@ -23,13 +23,13 @@ def draw(basis, fresh):
     import numpy as np
     
     L = np.linspace(0.35, 1.0, 30)
-    L = np.append(L, np.linspace(1.01, 1.51, 150))
+    L = np.append(L, np.linspace(1.01, 1.51, 50))
     L = np.append(L, np.linspace(1.52, 3.0, 20))
     Zero = np.zeros(L.shape)
     Erhf = np.zeros(L.shape)
     Euhf = np.zeros(L.shape)
     Efci = np.zeros(L.shape)
-    Eufci = np.zeros(L.shape)
+    # Eufci = np.zeros(L.shape)
 
     if (os.path.exists(name+'.R.npy') and
         os.path.exists(name+'.U.npy') and
@@ -38,7 +38,7 @@ def draw(basis, fresh):
         Erhf = np.load(name+'.R.npy')
         Euhf = np.load(name+'.U.npy')
         Efci = np.load(name+'.FCI.npy')
-        Eufci = np.load(name+'.UFCI.npy')
+        # Eufci = np.load(name+'.UFCI.npy')
     else:
         for i, l in enumerate(L):
             print(l)
@@ -46,15 +46,15 @@ def draw(basis, fresh):
                      [1, 0.000000, 0.000000, -l/2]]
             hfA = HFArchive(2, atoms, basis, 'H2', fresh=1)
             hfA.init_molecular_integrals()
-            Erhf[i] = hfA.HF(1)
+            Erhf[i] = hfA.RHF()
             Efci[i] = hfA.CI(0)
-            Euhf[i] = hfA.HF(2)
-            Eufci[i] = hfA.CI(0)
+            Euhf[i] = hfA.UHF()
+            # Eufci[i] = hfA.CI(0)
 
         hfa.dump_matrix(name, 'R', Erhf)
         hfa.dump_matrix(name, 'U', Euhf)
         hfa.dump_matrix(name, 'FCI', Efci)
-        hfa.dump_matrix(name, 'UFCI', Eufci)
+        # hfa.dump_matrix(name, 'UFCI', Eufci)
 
     # from scipy import interpolate
     # Erhf_smooth = interpolate.interp1d(L, Erhf, kind='cubic')
@@ -82,8 +82,7 @@ def draw(basis, fresh):
     ax.plot(L/A0, Erhf+1, '-', label="RHF" ,color=colors[1])
     ax.plot(L/A0, Euhf+1, '-', label="UHF", color=colors[2])
     ax.plot(L/A0, Efci+1, '-', label="FCI", color=colors[3])
-    ax.plot(L/A0, Eufci+1, '-', label="UFCI", color=colors[4])
-    
+    # ax.plot(L/A0, Eufci+1, '-', label="UFCI", color=colors[4])
     ax.legend()
     plt.show()
 
@@ -91,17 +90,19 @@ def draw(basis, fresh):
 if __name__ == "__main__":
     # atoms1 = [[8, 0.000000, 0.000000, 0.227000], [1, 0.000000, 1.353000,-0.908000], [1, 0.000000,-1.353000,-0.908000]]
     # hfA = HFArchive(10, atoms1, '3-21g', 'H2O', fresh=0)
-    # atoms2 = [[1, 0.000000, 0.000000, 0.370065], [1, 0.000000, 0.000000,-0.370065]]
+    atoms2 = [[1, 0.000000, 0.000000, 0.370065], [1, 0.000000, 0.000000,-0.370065]]
     # hfA = HFArchive(2, atoms2, '6-31g(d,p)', 'H2', fresh=1)
-    # hfA = HFArchive(2, atoms2, '3-21g', 'H2', fresh=0)
+    hfA = HFArchive(2, atoms2, '3-21g', 'H2', fresh=1)
+    # hfA = HFArchive(2, atoms2, 'sto-3g', 'H2', fresh=0)
     # atoms3 = [[1, 0.000000, 0.000000, 1], [1, 0.000000, 0.000000, -1]]
     # hfA = HFArchive(2, atoms3, 'sto-3g', 'H2', fresh=1)
 
-    # hfA.init_molecular_integrals()
-    # hfA.HF(1)
-    # hfA.CI(0)
-    # hfA.HF(2)
+    hfA.init_molecular_integrals()
+    hfA.RHF()
+    hfA.CI(0)
+    # hfA.UHF()
     # hfA.CI(0)
     # hfA.dump()
     # gui.Main_windows()
-    draw('6-31g', 0)
+    
+    # draw('6-31g(d,p)', 0)

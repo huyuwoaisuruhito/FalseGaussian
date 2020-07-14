@@ -5,7 +5,7 @@ from timeit import default_timer as timer
 import numpy as np
 
 import HartreeFock.basis as bs
-import HartreeFock.ci2 as ci
+import HartreeFock.ci as ci
 import HartreeFock.molecularIntegrals as mi
 import HartreeFock.hf as hf
 
@@ -26,7 +26,6 @@ class HFArchive:
         self.SCF_ERROR = 1e-8
         self.debug = 0
 
-        self.hf_type = hf_type
         self.N = [N]
         A_2_atom_unit(atoms)
         self.atoms = atoms
@@ -66,13 +65,17 @@ class HFArchive:
         with open(fname+'.arc', 'rb') as file:
             return pickle.load(file)
 
-    def HF(self, hf_type=0):
-        if hf_type:
-            self.hf_type = hf_type
-        return hf.HF_A(self)
+    def RHF(self):
+        return hf.HF_A(self, 1)
+
+    def UHF(self):
+        return hf.HF_A(self, 2)
 
     def CI(self, level):
         return ci.CI_A(self, level)
+
+    def FCI(self):
+        return ci.CI_A(self, 0)
 
 
 def A_2_atom_unit(atoms):

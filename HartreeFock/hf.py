@@ -6,11 +6,11 @@ from scipy import linalg
 Rate = 0.5
 
 
-def HF_A(HFArchive):
+def HF_A(HFArchive, hf_type):
     return HF(HFArchive.N, HFArchive.K,
               HFArchive.S, HFArchive.Hc,
               HFArchive.G, HFArchive.Vnn,
-              HFArchive.hf_type, HFArchive.SCF_MAX_iteration,
+              hf_type, HFArchive.SCF_MAX_iteration,
               HFArchive.SCF_ERROR, HFArchive.debug,
               HFArchive)
 
@@ -64,7 +64,7 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration, SCF_ERROR, debug=0, HFArchive
             for i in range(K):
                 for j in range(K):
                     for a in range(N[s]):
-                        nP[s, i, j] += 2 * (C[s, i, a] * C[s, j, a])
+                        nP[s, i, j] += C[s, i, a] * C[s, j, a] * 2 / oS
 
             P[s] = nP[s]*Rate + P[s]*(1-Rate)
 
@@ -75,7 +75,7 @@ def HF(N, K, S, Hc, G, Vnn, oS, SCF_MAX_iteration, SCF_ERROR, debug=0, HFArchive
 
             for i in range(K):
                 for j in range(K):
-                    nE += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j]) / oS
+                    nE += 1/2 * P[s, j, i] * (Hc[i, j] + F[s, i, j])
             # print('s: ', s, 'E: ', nE)
             E += nE
 
